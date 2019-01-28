@@ -6,6 +6,11 @@ class Breed(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(256), nullable=False, unique=True)
     description = db.Column(db.String(256))
+    dogs = db.relationship(
+        'Dog',
+        backref='Dog',
+        cascade='all, delete-orphan'
+    )
 
     def __init__(self, name, description):
         self.name = name

@@ -4,13 +4,19 @@ from flask_restful import (
     fields
     )
 
-from models.dogs import Dog
+from models.dogs import Dog, DogBreeds, Breed
 from validations import non_empty_string
+
+breed_fields = {
+    'id': fields.Integer,
+    'name': fields.String,
+    'description': fields.String
+}
 
 dog_fields = {
     'id': fields.Integer,
     'name': fields.String,
-    'breed': fields.Integer,
+    'breeds': fields.List(fields.Nested(breed_fields)),
     'age': fields.Integer,
     'weight': fields.Float,
     'color': fields.String
@@ -28,8 +34,9 @@ class DogList(Resource):
             location=['form', 'json']
         )
         self.reqparse.add_argument(
-            'breed',
+            'breeds',
             type=int,
+            action='append',
             required=True,
             location=['form', 'json']
         )
@@ -57,13 +64,21 @@ class DogList(Resource):
 
         args = self.reqparse.parse_args()
         name = args.get('name')
+        breeds = args.get('breeds', '')
+        age = args.get('age')
+        weight = args.get('weight')
+        color = args.get('color')
 
         existing_dog = Dog.get_dog_by_name(name)
 
         if not existing_dog:
             try:
-                new_dog = Dog(**args)
+                new_dog = Dog(name, age, weight, color)
                 new_dog.save()
+                created_dog = Dog.get_dog_by_name(name)
+                for breed in breeds:
+                    new_dog_breeds = DogBreeds(created_dog.id, breed)
+                    new_dog_breeds.save()
                 return {'dog': marshal(new_dog, dog_fields)}, 201
             except Exception as e:
                 return {'message': str(e)}, 400

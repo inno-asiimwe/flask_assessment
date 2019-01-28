@@ -23,7 +23,7 @@ class TestDog(BaseTestCase):
                 data=json.dumps(
                     dict(
                         name="fox",
-                        breed=1,
+                        breeds=[1],
                         age=12,
                         weight=25.6,
                         color="black"
@@ -35,7 +35,6 @@ class TestDog(BaseTestCase):
             data = json.loads(response.data.decode())
             self.assertEqual(response.status_code, 201)
             self.assertIn("fox", data["dog"]["name"])
-            self.assertEqual(1, data["dog"]["breed"])
             self.assertIn("black", data["dog"]["color"])
 
     def test_create_dog_duplicate_name(self):
@@ -46,7 +45,7 @@ class TestDog(BaseTestCase):
                 data=json.dumps(
                     dict(
                         name="fox",
-                        breed=1,
+                        breeds=[1],
                         age=12,
                         weight=25.6,
                         color="black"
@@ -59,7 +58,7 @@ class TestDog(BaseTestCase):
                 data=json.dumps(
                     dict(
                         name="fox",
-                        breed=1,
+                        breeds=[1],
                         age=12,
                         weight=25.6,
                         color="black"
@@ -84,7 +83,7 @@ class TestDog(BaseTestCase):
                 data=json.dumps(
                     dict(
                         name="fox",
-                        breed=1,
+                        breeds=[1],
                         age=12,
                         weight=25.6,
                         color="black"
@@ -112,7 +111,7 @@ class TestDog(BaseTestCase):
                 data=json.dumps(
                     dict(
                         name="fox",
-                        breed=1,
+                        breeds=[1],
                         age=12,
                         weight=25.6,
                         color="black"
@@ -154,7 +153,7 @@ class TestDog(BaseTestCase):
                 data=json.dumps(
                     dict(
                         name="fox",
-                        breed=1,
+                        breeds=[1],
                         age=12,
                         weight=25.6,
                         color="black"

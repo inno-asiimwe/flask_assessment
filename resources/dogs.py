@@ -79,7 +79,7 @@ class DogResource(Resource):
 
         if dog:
             return {'dog': marshal(dog, dog_fields)}, 200
-        return {'message': 'Dog with provided id does nt exist'}, 404
+        return {'message': 'Dog with provided id does not exist'}, 404
 
     def delete(self, id):
         dog_to_delete = Dog.get_dog_by_id(id)
@@ -103,4 +103,3 @@ api.add_resource(
     '/<int:id>',
     endpoint='dog'
 )
-

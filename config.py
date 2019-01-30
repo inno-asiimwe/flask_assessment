@@ -4,6 +4,7 @@ import os
 class Config:
     DEBUG = False
     SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL')
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 
 class DevelopmentConfig(Config):
@@ -12,6 +13,8 @@ class DevelopmentConfig(Config):
 
 class TestingConfig(Config):
     DEBUG = True
+    TESTING = True
+    SQLALCHEMY_DATABASE_URI = 'postgresql://localhost/test_db'
 
 
 class ProductionConfig(Config):

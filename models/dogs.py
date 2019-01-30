@@ -82,7 +82,6 @@ class Dog(db.Model):
             total += item.weight
         return total/len(collection)
 
-
     def __repr__(self):
         return '<Dog {}>'.format(self.name)
 

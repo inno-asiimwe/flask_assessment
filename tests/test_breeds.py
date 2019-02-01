@@ -38,6 +38,41 @@ class TestBreed(BaseTestCase):
                 "Missing required parameter",
                 data["message"]["name"])
 
+    def test_create_breed_empty_name(self):
+        with self.client:
+            response = self.client.post(
+                '/api/v1/breeds',
+                data=json.dumps(
+                    dict(
+                        name="   ",
+                        description="Guard dog"
+                    )
+                ),
+                content_type='application/json'
+            )
+            data = json.loads(response.data.decode())
+            self.assertEqual(response.status_code, 400)
+            self.assertIn(
+                'String should not be empty',
+                data['message']['name']
+                )
+
+    def test_create_breed_integer_name(self):
+        with self.client:
+            response = self.client.post(
+                '/api/v1/breeds',
+                data=json.dumps(
+                    dict(
+                        name=5,
+                        description='dfhdhfd'
+                    )
+                ),
+                content_type='application/json'
+            )
+            data = json.loads(response.data.decode())
+            self.assertEqual(response.status_code, 400)
+            self.assertIn("String expected", data['message']['name'])
+
     def test_create_duplicate_breed(self):
         with self.client:
             initial_response = self.client.post(

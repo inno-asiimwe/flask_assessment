@@ -5,6 +5,7 @@ from flask_restful import (
     )
 
 from models.breeds import Breed
+from validations import non_empty_string
 
 breed_fields = {
     'id': fields.Integer,
@@ -19,13 +20,13 @@ class BreedList(Resource):
         self.reqparse = reqparse.RequestParser()
         self.reqparse.add_argument(
             'name',
-            type=str,
+            type=non_empty_string,
             required=True,
             location=['form', 'json']
         )
         self.reqparse.add_argument(
             'description',
-            type=str,
+            type=non_empty_string,
             required=False,
             location=['form', 'json']
         )
@@ -39,9 +40,12 @@ class BreedList(Resource):
         existing_breed = Breed.get_breed_by_name(name)
 
         if not existing_breed:
-            breed = Breed(**args)
-            breed.save()
-            return {'breed': marshal(breed, breed_fields)}, 201
+            try:
+                breed = Breed(**args)
+                breed.save()
+                return {'breed': marshal(breed, breed_fields)}, 201
+            except Exception as e:
+                return {'message': str(e)}, 400
         return {'message': 'breed already exists'}, 409
 
     def get(self):
@@ -56,13 +60,13 @@ class BreedResource(Resource):
         self.reqparse = reqparse.RequestParser()
         self.reqparse.add_argument(
             'name',
-            type=str,
+            type=non_empty_string,
             required=False,
             location=['form', 'json']
         )
         self.reqparse.add_argument(
             'description',
-            type=str,
+            type=non_empty_string,
             required=False,
             location=['form', 'json']
         )

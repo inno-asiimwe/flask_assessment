@@ -6,6 +6,7 @@ class Dog(db.Model):
     __tablename__ = 'dogs'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(256), nullable=False, unique=True)
+    name_to_compare = db.Column(db.String(256), nullable=False, unique=True)
     breed = db.Column(
         db.Integer, db.ForeignKey(Breed.id, ondelete='cascade'), nullable=False
         )
@@ -15,6 +16,7 @@ class Dog(db.Model):
 
     def __init__(self, name, breed, age, weight, color):
         self.name = name
+        self.name_to_compare = ''.join(name.lower().strip().split())
         self.breed = breed
         self.age = age
         self.weight = weight
@@ -30,7 +32,8 @@ class Dog(db.Model):
 
     @classmethod
     def get_dog_by_name(cls, name):
-        return cls.query.filter_by(name=name).first()
+        name_to_compare = ''.join(name.lower().strip().split())
+        return cls.query.filter_by(name_to_compare=name_to_compare).first()
 
     @classmethod
     def get_all_dogs(cls):

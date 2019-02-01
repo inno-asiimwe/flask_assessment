@@ -5,6 +5,7 @@ from flask_restful import (
     )
 
 from models.dogs import Dog
+from validations import non_empty_string
 
 dog_fields = {
     'id': fields.Integer,
@@ -22,7 +23,7 @@ class DogList(Resource):
         self.reqparse = reqparse.RequestParser()
         self.reqparse.add_argument(
             'name',
-            type=str,
+            type=non_empty_string,
             required=True,
             location=['form', 'json']
         )
@@ -46,7 +47,7 @@ class DogList(Resource):
         )
         self.reqparse.add_argument(
             'color',
-            type=str,
+            type=non_empty_string,
             required=True,
             location=['form', 'json']
         )
@@ -60,9 +61,12 @@ class DogList(Resource):
         existing_dog = Dog.get_dog_by_name(name)
 
         if not existing_dog:
-            new_dog = Dog(**args)
-            new_dog.save()
-            return {'dog': marshal(new_dog, dog_fields)}, 201
+            try:
+                new_dog = Dog(**args)
+                new_dog.save()
+                return {'dog': marshal(new_dog, dog_fields)}, 201
+            except Exception as e:
+                return {'message': str(e)}, 400
         return {'message': 'Dog with specified name already exists'}, 409
 
     def get(self):

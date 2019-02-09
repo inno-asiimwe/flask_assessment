@@ -1,0 +1,4 @@
+---
+ansible_python_interpreter: "/usr/bin/python3"
+IMG_TAG: "{{ lookup('env', 'IMG_TAG') }}"
+DATABASE_URL: "{{ lookup('env', 'DATABASE_URL') }}"

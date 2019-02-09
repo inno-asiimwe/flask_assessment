@@ -1,0 +1,85 @@
+version: 2
+defaults: &defaults
+  docker:
+    - image: circleci/python:3.6.2
+      environment:
+        DATABASE_URI: postgresql://circleci@localhost/test_db?sslmode=disable
+      
+    - image: postgres:9.6.2
+      environment:
+        POSTGRES_USER: circleci
+        POSTGRES_DB: test_db
+  working_directory: ~/app
+
+build_and_push_image: &build_and_push_image
+  run:
+    name: build image
+    command: |
+      export IMG_TAG=$(echo $CIRCLE_SHA1 | cut -c -7)
+      echo $IMG_TAG
+      docker login -u _json_key -p "$(echo $GCLOUD_SERVICE_KEY)" https://gcr.io
+      docker build -f Dockerfile -t gcr.io/dog-api-231115/dog-api:$IMG_TAG .
+      docker push gcr.io/dog-api-231115/dog-api:$IMG_TAG
+
+configure_gcloud: &configure_gcloud
+  run:
+    name: configure gcloud default settings
+    command: |
+      gcloud auth activate-service-account --key-file ~/app/auth_key.json
+      gcloud container clusters get-credentials  dog-cluster --zone us-central1-a --project dog-api-231115
+
+deploy_to_kubernetes: &deploy_to_kubernetes
+  run:
+    name: Run ansible playbook to configure kubernetes
+    command: |
+      export IMG_TAG=$(echo $CIRCLE_SHA1 | cut -c -7)
+      ansible-playbook deployment/main.yml -vvv
+  
+
+jobs:
+  deploy:
+    docker:
+      - image: gcr.io/dog-api-231115/dog-circleci
+        auth:
+          username: _json_key
+          password: $GCLOUD_SERVICE_KEY
+        environment:
+          GOOGLE_APPLICATION_CREDENTIALS: /root/app/auth_key.json
+
+    working_directory: ~/app
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Add gcloud key to json file
+          command: echo $GCLOUD_SERVICE_KEY > ~/app/auth_key.json
+      - *configure_gcloud
+      - *build_and_push_image
+      - *deploy_to_kubernetes
+
+  test:
+    <<: *defaults
+    steps:
+      - checkout
+      - run:
+          name: install dependencies
+          command: |
+            sudo pip install -r requirements.txt
+      - run:
+          name: wait for postgres to be ready
+          command: dockerize -wait tcp://localhost:5432 -timeout 1m
+      - run:
+          name: Run tests
+          command: nosetests
+
+workflows:
+  version: 2
+  test_and_deploy:
+    jobs:
+      - test
+      - deploy:
+          requires:
+            - test
+          filters:
+            branches:
+              only: develop

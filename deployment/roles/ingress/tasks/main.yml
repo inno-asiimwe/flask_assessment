@@ -1,0 +1,4 @@
+- name: Apply ingress
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'templates/ingress.yml') | from_yaml }}"

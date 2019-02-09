@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, jsonify
 from config import app_config
 from flask_sqlalchemy import SQLAlchemy
 
@@ -16,6 +16,10 @@ def create_app(config_name):
     from resources.breeds import breeds_api
     from resources.dogs import dogs_api
     from resources.statistics import stats_api
+
+    @app.route('/', methods=['GET'])
+    def home():
+        return jsonify({'message': 'Welcome to the dog api'}), 200
 
     app.register_blueprint(breeds_api, url_prefix='/api/v1/breeds')
     app.register_blueprint(dogs_api, url_prefix='/api/v1/dogs')

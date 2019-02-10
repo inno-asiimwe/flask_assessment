@@ -1,0 +1,21 @@
+- name: Check for existing migration job
+  k8s_facts:
+    api_version: batch/v1
+    kind: Job
+    name: dog-api-db-migrate
+    namespace: default
+  register: migrate_job
+
+- name: Delete existing migration job
+  k8s:
+    state: absent
+    api_version: batch/v1
+    kind: Job
+    name: dog-api-db-migrate
+    namespace: default
+  when: migrate_job.resources
+
+- name: Run database migrations
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'templates/db-migration-job.yml') | from_yaml }}"

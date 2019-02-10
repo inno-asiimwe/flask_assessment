@@ -1,0 +1,25 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: dog-api-db-migrate
+  namespace: default
+spec:
+  ttlSecondsAfterFinished: 100
+  template:
+    metadata:
+      name: dog-api-db-grate
+    spec:
+      containers:
+        - name: dog-api
+          image: gcr.io/dog-api-231115/dog-api:{{ IMG_TAG }}
+          command:
+            - python
+            - manage.py
+            - db
+            - upgrade
+          env:
+          - name: ENVIRONMENT
+            value: production
+          - name: DATABASE_URL
+            value: "{{ DATABASE_URL }}"
+      restartPolicy: OnFailure

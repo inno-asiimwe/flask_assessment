@@ -1,4 +1,4 @@
-import os 
+import os
 
 
 class Config:
@@ -18,7 +18,9 @@ class TestingConfig(Config):
 
 
 class ProductionConfig(Config):
-    pass
+    DEBUG = True
+    TESTING = False
+    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL')
 
 
 app_config = {

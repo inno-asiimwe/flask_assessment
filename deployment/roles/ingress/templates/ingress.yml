@@ -1,0 +1,16 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: dog-api-ingress
+  namespace: default
+  annotations:
+    kubernetes.io/ingress.class: "gce"
+    kubernetes.io/ingress.global-static-ip-name: ingress-ip
+spec:
+  rules:
+    - http:
+        paths:
+        - path: /*
+          backend:
+            serviceName: dog-api-service
+            servicePort: 80

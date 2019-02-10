@@ -1,0 +1,35 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: dog-api
+  namespace: default
+spec:
+  replicas: 2
+  minReadSeconds: 15
+  revisionHistoryLimit: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: dog-api
+    spec:
+      containers:
+        - name: dog-api
+          image: gcr.io/dog-api-231115/dog-api:{{ IMG_TAG }}
+          imagePullPolicy: Always
+          command:
+            - gunicorn
+            - -b
+            - 0.0.0.0:80
+            - run:app
+          ports:
+            - containerPort: 80
+          env:
+          - name: ENVIRONMENT
+            value: production
+          - name: DATABASE_URL
+            value: "{{ DATABASE_URL }}"

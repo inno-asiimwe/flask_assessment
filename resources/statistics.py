@@ -1,4 +1,4 @@
-from flask import Blueprint
+from flask import Blueprint, request
 from flask_restful import Resource, Api, reqparse
 from models.dogs import Dog
 
@@ -13,9 +13,8 @@ class DogStatistics(Resource):
         )
 
     def get(self):
-        args = self.reqparse.parse_args()
 
-        breed_id = args.get('breed')
+        breed_id = request.args.get('breed')
 
         if breed_id is None:
             average_weight = Dog.calculate_average_weight()

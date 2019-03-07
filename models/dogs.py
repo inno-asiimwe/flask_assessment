@@ -7,17 +7,16 @@ class Dog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(256), nullable=False, unique=True)
     name_to_compare = db.Column(db.String(256), nullable=False, unique=True)
-    breed = db.Column(
-        db.Integer, db.ForeignKey(Breed.id, ondelete='cascade'), nullable=False
-        )
     age = db.Column(db.Integer, nullable=False)
     weight = db.Column(db.Float)
     color = db.Column(db.String(256), nullable=False)
+    breeds = db.relationship(
+        'Breed', secondary='dog_breeds', backref=db.backref('dogs')
+        )
 
-    def __init__(self, name, breed, age, weight, color):
+    def __init__(self, name, age, weight, color):
         self.name = name
         self.name_to_compare = ''.join(name.lower().strip().split())
-        self.breed = breed
         self.age = age
         self.weight = weight
         self.color = color
@@ -41,7 +40,9 @@ class Dog(db.Model):
 
     @classmethod
     def get_dogs_by_breed(cls, breed_id):
-        cls.query.filter_by(breed=breed_id).all()
+        breed = Breed.get_breed_by_id(breed_id)
+        all_dogs = cls.get_all_dogs()
+        return [dog for dog in all_dogs if breed in dog.breeds]
 
     @classmethod
     def get_dog_by_id(cls, id):
@@ -59,14 +60,14 @@ class Dog(db.Model):
 
     @classmethod
     def calculate_avearge_age_by_breed(cls, breed_id):
-        dogs = cls.query.filter_by(breed=breed_id).all()
+        dogs = cls.get_dogs_by_breed(breed_id)
         return cls.calculate_average_dog_age(dogs)
 
     @classmethod
     def calculate_average_weight_by_breed(cls, breed_id):
-        dogs = cls.query.filter_by(breed=breed_id).all()
+        dogs = cls.get_dogs_by_breed(breed_id)
         return cls.calculate_average_dog_weight(dogs)
-    
+
     @staticmethod
     def calculate_average_dog_age(collection):
         total = 0
@@ -89,4 +90,19 @@ class Dog(db.Model):
         return '<Dog {}>'.format(self.name)
 
 
+class DogBreeds(db.Model):
+    __tablename__ = 'dog_breeds'
+    breed_id = db.Column(db.Integer, db.ForeignKey(Breed.id), primary_key=True)
+    dog_id = db.Column(db.Integer, db.ForeignKey(Dog.id), primary_key=True)
 
+    def __init__(self, dog_id, breed_id):
+        self.dog_id = dog_id
+        self.breed_id = breed_id
+
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
+
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit(self)
